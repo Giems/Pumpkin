@@ -98,6 +98,11 @@ rustc_version_runtime = "0.3"
 flate2.workspace = true
 console-subscriber = { workspace = true, optional = true }
 
+# admin panel (optional, gated behind admin_panel feature)
+axum = { version = "0.8", default-features = false, features = ["json", "tokio", "http1", "multipart"], optional = true }
+tower = { version = "0.5", features = ["util"], optional = true }
+tower-http = { version = "0.6", features = ["cors"], optional = true }
+
 wasmtime = { workspace = true }
 wasmtime-wasi = { workspace = true }
 wasmparser = { workspace = true }
@@ -115,6 +120,8 @@ tempfile.workspace = true
 [features]
 console-subscriber = ["dep:console-subscriber"]
 tokio_taskdump = ["pumpkin-world/tokio_taskdump"]
+admin_panel = ["dep:axum", "dep:tower", "dep:tower-http"]
+default = ["admin_panel"]
 
 [lints]
 workspace = true

@@ -36,6 +36,7 @@ use tracing_subscriber::filter::LevelFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
+pub mod admin;
 pub mod block;
 pub mod command;
 pub mod crash;
@@ -228,6 +229,17 @@ impl PumpkinServer {
             server.spawn_task(async move {
                 RCONServer::run(&rcon, rcon_server).await;
             });
+        }
+
+        #[cfg(feature = "admin_panel")]
+        {
+            let admin_config = server.advanced_config.networking.admin_panel.clone();
+            if admin_config.enabled {
+                let admin_server = server.clone();
+                server.spawn_task(async move {
+                    crate::admin::start(admin_config, admin_server).await;
+                });
+            }
         }
 
         let tcp_listener = if server.basic_config.java_edition {

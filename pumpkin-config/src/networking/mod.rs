@@ -1,3 +1,4 @@
+use admin::AdminPanelConfig;
 use auth::AuthenticationConfig;
 use proxy::ProxyConfig;
 use query::QueryConfig;
@@ -6,6 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{CompressionConfig, LANBroadcastConfig};
 
+pub mod admin;
 pub mod auth;
 pub mod compression;
 pub mod lan_broadcast;
@@ -33,4 +35,6 @@ pub struct NetworkingConfig {
     pub bedrock_compression: CompressionConfig,
     /// LAN broadcast settings.
     pub lan_broadcast: LANBroadcastConfig,
+    /// Admin panel HTTP API settings.
+    pub admin_panel: AdminPanelConfig,
 }

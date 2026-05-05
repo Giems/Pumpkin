@@ -22,6 +22,7 @@ pub use commands::CommandsConfig;
 pub use networking::auth::AuthenticationConfig;
 pub use networking::compression::CompressionConfig;
 pub use networking::lan_broadcast::LANBroadcastConfig;
+pub use networking::admin::AdminPanelConfig;
 pub use networking::rcon::RCONConfig;
 pub use plugins::PluginsConfig;
 pub use pvp::PVPConfig;
