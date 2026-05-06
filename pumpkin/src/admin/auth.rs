@@ -8,6 +8,8 @@ use axum::{
     response::Response,
 };
 
+use tracing::warn;
+
 use super::AppState;
 
 pub async fn bearer_auth(
@@ -27,13 +29,19 @@ pub async fn bearer_auth(
 
     match token {
         Some(t) if t == state.token => next.run(request).await,
-        Some(_) => Response::builder()
-            .status(StatusCode::UNAUTHORIZED)
-            .body(Body::from("Invalid admin token"))
-            .unwrap(),
-        None => Response::builder()
-            .status(StatusCode::UNAUTHORIZED)
-            .body(Body::from("Missing Authorization header"))
-            .unwrap(),
+        Some(_) => {
+            warn!(uri = %request.uri(), "admin: rejected request — invalid token");
+            Response::builder()
+                .status(StatusCode::UNAUTHORIZED)
+                .body(Body::from("Invalid admin token"))
+                .unwrap()
+        }
+        None => {
+            warn!(uri = %request.uri(), "admin: rejected request — missing Authorization header");
+            Response::builder()
+                .status(StatusCode::UNAUTHORIZED)
+                .body(Body::from("Missing Authorization header"))
+                .unwrap()
+        }
     }
 }

@@ -1,25 +1,22 @@
-use std::sync::Arc;
-
+use crate::{admin::AppState, command::CommandSender};
 use axum::{Json, extract::State, response::IntoResponse};
 use serde::{Deserialize, Serialize};
-
-use crate::command::CommandSender;
-
-use super::AppState;
+use std::sync::Arc;
+use tracing::info;
 
 #[derive(Deserialize)]
-pub struct CommandBody {
+pub struct ExecuteCommandBody {
     pub command: String,
 }
 
 #[derive(Serialize)]
-struct CommandResponse {
+struct ExecuteCommandResponse {
     output: Vec<String>,
 }
 
-pub async fn run_command(
+pub async fn execute_command(
     State(state): State<Arc<AppState>>,
-    Json(body): Json<CommandBody>,
+    Json(body): Json<ExecuteCommandBody>,
 ) -> impl IntoResponse {
     let output = Arc::new(tokio::sync::Mutex::new(Vec::<String>::new()));
     let server = state.server.clone();
@@ -41,5 +38,10 @@ pub async fn run_command(
     .ok();
 
     let lines = output.lock().await.clone();
-    Json(CommandResponse { output: lines })
+    info!(
+        command = body.command,
+        lines = lines.len(),
+        "admin: command executed"
+    );
+    Json(ExecuteCommandResponse { output: lines })
 }
