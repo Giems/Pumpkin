@@ -264,14 +264,15 @@ impl MobEntity {
 
         // TODO: gate behind EnvironmentAttributes::MONSTERS_BURN once implemented.
 
-        // Vanilla: getLightLevelDependentMagicValue() — sky light at eye pos, scaled 0–1.
+        // Vanilla: getLightLevelDependentMagicValue() — (rawSkyLight - skyDarken) / 15.0.
+        let sky_darken = world.get_sky_darken().await;
         let eye_block_pos = entity.get_eye_pos();
-        let brightness = world
+        let raw_sky_light = world
             .level
             .light_engine
             .get_sky_light_level(&world.level, &eye_block_pos.to_block_pos())
-            .await as f32
-            / 15.0;
+            .await;
+        let brightness = raw_sky_light.saturating_sub(sky_darken) as f32 / 15.0;
 
         if brightness <= 0.5 {
             return false;

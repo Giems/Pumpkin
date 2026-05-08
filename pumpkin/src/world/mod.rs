@@ -1509,6 +1509,16 @@ impl World {
         self.level_time.lock().await.time_of_day
     }
 
+    // Technically taking 2 locks one after another can cause minor issues, but the chances of that happening are so low that it's not worth the complexity of merging the two locks
+    pub async fn get_sky_darken(&self) -> u8 {
+        let day_time = self.level_time.lock().await.time_of_day % 24000;
+        let (rain_level, thunder_level) = {
+            let weather = self.weather.lock().await;
+            (weather.rain_level, weather.thunder_level)
+        };
+        time::compute_sky_darken(day_time, rain_level, thunder_level)
+    }
+
     pub async fn set_time_of_day(&self, time: i64) {
         let mut level_time = self.level_time.lock().await;
         level_time.set_time(time);
