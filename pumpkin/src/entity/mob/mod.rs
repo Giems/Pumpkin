@@ -262,17 +262,22 @@ impl MobEntity {
         let world_arc = entity.world.load();
         let world = world_arc.as_ref();
 
-        // TODO: gate behind EnvironmentAttributes::MONSTERS_BURN once implemented.
-
-        // Vanilla: getLightLevelDependentMagicValue() — (rawSkyLight - skyDarken) / 15.0.
-        let sky_darken = world.get_sky_darken().await;
+        // Night boundary from data/minecraft/timeline/day.json — monsters_burn keyframes:
+        // value=false at tick 12542 (dusk), value=true at tick 23460 (dawn).
+        // TODO: read directly from EnvironmentAttributes::MONSTERS_BURN once implemented.
+        const NIGHT_START: i64 = 12542;
+        const NIGHT_END: i64 = 23460;
+        let day_time = world.get_time_of_day().await % 24000;
+        if (NIGHT_START..NIGHT_END).contains(&day_time) {
+            return false;
+        }
         let eye_block_pos = entity.get_eye_pos();
         let raw_sky_light = world
             .level
             .light_engine
             .get_sky_light_level(&world.level, &eye_block_pos.to_block_pos())
             .await;
-        let brightness = raw_sky_light.saturating_sub(sky_darken) as f32 / 15.0;
+        let brightness = raw_sky_light as f32 / 15.0;
 
         if brightness <= 0.5 {
             return false;
